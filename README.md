@@ -77,3 +77,92 @@ class HasRoleMiddleware
 }
 ```
 
+This is being registered to the Application Http Kernel, under $middlewareAliases property.
+
+```
+<?php
+
+namespace App\Http;
+
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+
+class Kernel extends HttpKernel
+{
+
+    /**
+     * The application's middleware aliases.
+     *
+     * Aliases may be used instead of class names to conveniently assign middleware to routes and groups.
+     *
+     * @var array<string, class-string|string>
+     */
+    protected $middlewareAliases = [
+        'has_role' => \App\Http\Middleware\HasRoleMiddleware::class
+    ];
+}
+```
+
+## Middleware Usage
+
+You have two approaches to integrate the middleware. One is by using it to Controller and the other approach is to use it in the Routes.
+
+1. From controller
+
+```
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\AssignUserRoleRequest;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
+use App\Models\User;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
+
+class UserController extends Controller
+{
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param \App\Http\Requests\StoreUserRequest $request
+     * @return \App\Http\Resources\UserResource
+     */
+    public function store(StoreUserRequest $request) : UserResource
+    {
+        $this->middleware('has_role:'.Role::SUPER_ADMIN->value.','.Role::ADMIN->value)
+        //logics
+    }
+}
+```
+
+2. From Routes
+
+```
+<?php
+
+use App\Http\Controllers\Api\AuthController;
+use Illuminate\Support\Facades\Route;
+use App\Enums\Role;
+use App\Http\Controllers\Api\UserController;
+
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::group(['middleware' => 'auth'], function(){
+    Route::get('me', [AuthController::class, 'me']);
+    Route::post('logout', [AuthController::class, 'logout']);
+
+    //users Rest API
+    Route::prefix('users')
+        ->controller(UserController::class)
+        ->group(function () {
+            Route::get('/', 'index');
+            Route::post('/', 'store')->middleware('has_role:'.Role::SUPER_ADMIN->value.','.Role::ADMIN->value);
+            Route::put('/{id}', 'update')->middleware('has_role:'.Role::SUPER_ADMIN->value.','.Role::ADMIN->value);
+            Route::delete('/{id}', 'destroy')->middleware('has_role:'.Role::SUPER_ADMIN->value);
+            Route::post('/{id}/assign-role', 'assignRole')->middleware('has_role:'.Role::SUPER_ADMIN->value);
+        });
+});
+```
