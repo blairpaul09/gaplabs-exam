@@ -106,6 +106,8 @@ class Kernel extends HttpKernel
 
 You have two approaches to integrate the middleware. One is by using it to Controller and the other approach is to use it in the Routes.
 
+- Note: make sure to follow the pattern of calling this middleware. "has_role:admin,super_admin,user" 
+
 1. From controller
 
 ```
