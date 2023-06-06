@@ -32,8 +32,9 @@
 3. configure the database settings from the created .env file.
 4. generate an application key by running this command. "php artisan key:generate"
 5. run migration by running this command. "php artisan migrate".
-6. run seeder to create roles and a super admin.
-7. Finally, serve the application by running "php artisan serve"
+6. run seeder to create roles and a super admin by running this command. "php artisan db:seed"
+7. run this command "php artisan jwt:secret" to generate jwt secret key
+8. Finally, serve the application by running "php artisan serve"
 
 ## Super admin credentials
 username: superadmin.gaplabs

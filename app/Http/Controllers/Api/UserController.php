@@ -22,8 +22,7 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        $users = User::whereNotIn('username', [$user->username, 'superadmin.gaplabs'])
-            ->paginate(10);
+        $users = User::paginate(10);
 
         return UserResource::collection($users);
     }
